@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Petit carnet pour toi</title>
+<style>
+  :root{
+    --cream: #FBF3EE;
+    --cream-deep: #F3E4DA;
+    --terracotta: #E8927C;
+    --terracotta-deep: #D97456;
+    --sage: #A8B89A;
+    --ink: #4A3F3D;
+    --ink-soft: #8A7B77;
+    --paper-edge: #EAD9CC;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html,body{
+    height:100%;
+    background:var(--cream);
+    font-family:-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    color:var(--ink);
+    overflow-x:hidden;
+  }
+
+  body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px 16px;
+    position:relative;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(232,146,124,0.10) 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(168,184,154,0.12) 0%, transparent 50%),
+      var(--cream);
+  }
+
+  .petal{
+    position:fixed;
+    top:-40px;
+    font-size:18px;
+    opacity:0.35;
+    pointer-events:none;
+    animation: fall linear infinite;
+    z-index:0;
+    color:var(--terracotta);
+  }
+  @keyframes fall{
+    to{ transform: translateY(110vh) rotate(360deg); }
+  }
+
+  .stage{
+    width:100%;
+    max-width:420px;
+    position:relative;
+    z-index:1;
+  }
+
+  .sound-toggle{
+    position:absolute;
+    top:-52px;
+    right:0;
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:var(--cream-deep);
+    border:1px solid var(--paper-edge);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-size:17px;
+    transition:transform 0.2s ease, background 0.2s ease;
+    z-index:5;
+  }
+  .sound-toggle:active{ transform:scale(0.9); }
+  .sound-toggle.on{ background:var(--terracotta); }
+
+  .notebook{
+    position:relative;
+    perspective:1600px;
+  }
+
+  .card{
+    background:#fff;
+    border-radius:18px;
+    padding:38px 28px 32px;
+    box-shadow:
+      0 1px 2px rgba(74,63,61,0.04),
+      0 12px 28px rgba(74,63,61,0.10),
+      0 2px 0 var(--paper-edge);
+    position:relative;
+    min-height:420px;
+    display:flex;
+    flex-direction:column;
+    transform-style:preserve-3d;
+    animation: cardIn 0.55s cubic-bezier(.22,1,.36,1);
+  }
+
+  .card::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    border-radius:18px;
+    border:1px solid rgba(74,63,61,0.05);
+    pointer-events:none;
+  }
+
+  @keyframes cardIn{
+    from{ opacity:0; transform: rotateY(-8deg) translateX(24px) scale(0.97); }
+    to{ opacity:1; transform: rotateY(0) translateX(0) scale(1); }
+  }
+  .card.leaving{
+    animation: cardOut 0.4s cubic-bezier(.5,0,.75,0) forwards;
+  }
+  @keyframes cardOut{
+    to{ opacity:0; transform: rotateY(10deg) translateX(-30px) scale(0.96); }
+  }
+
+  .stitches{
+    position:absolute;
+    left:14px; top:18px; bottom:18px;
+    width:2px;
+    background-image: repeating-linear-gradient(to bottom, var(--paper-edge) 0 6px, transparent 6px 12px);
+    opacity:0.7;
+  }
+
+  .progress-track{
+    display:flex;
+    gap:6px;
+    margin-bottom:26px;
+    padding-left:14px;
+  }
+  .progress-dot{
+    height:5px;
+    flex:1;
+    border-radius:3px;
+    background:var(--paper-edge);
+    overflow:hidden;
+    position:relative;
+  }
+  .progress-dot .fill{
+    position:absolute; inset:0;
+    background:var(--terracotta);
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:transform 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-dot.done .fill{ transform:scaleX(1); }
+  .progress-dot.current .fill{ transform:scaleX(1); transition:transform 0.5s ease; }
+
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    padding-left:14px;
+    margin-bottom:10px;
+    font-weight:600;
+  }
+
+  .question{
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size:22px;
+    line-height:1.35;
+    padding-left:14px;
+    margin-bottom:24px;
+    color:var(--ink);
+  }
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    padding-left:14px;
+    flex:1;
+  }
+
+  .option{
+    text-align:left;
+    border:1.5px solid var(--paper-edge);
+    background:var(--cream);
+    border-radius:12px;
+    padding:13px 16px;
+    font-size:15px;
+    color:var(--ink);
+    cursor:pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    font-family:inherit;
+  }
+  .option:active{ transform:scale(0.98); }
+  .option:hover{ border-color:var(--terracotta); background:#fff; }
+  .option.selected{
+    border-color:var(--terracotta-deep);
+    background:var(--terracotta);
+    color:#fff;
+    font-weight:600;
+  }
+
+  textarea.open-answer{
+    width:calc(100% - 14px);
+    min-height:110px;
+    border:1.5px solid var(--paper-edge);
+    border-radius:12px;
+    background:var(--cream);
+    font-family:inherit;
+    font-size:15px;
+    color:var(--ink);
+    padding:14px 16px;
+    resize:none;
+    margin-left:14px;
+    transition:border-color 0.2s;
+  }
+  textarea.open-answer:focus{ outline:none; border-color:var(--terracotta); }
+
+  .nav-row{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:22px;
+    padding-left:14px;
+  }
+
+  .next-btn{
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    border-radius:30px;
+    padding:13px 26px;
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    transition: background 0.2s, transform 0.15s;
+    font-family:inherit;
+    opacity:0.35;
+    pointer-events:none;
+  }
+  .next-btn.active{ opacity:1; pointer-events:auto; background:var(--terracotta-deep); }
+  .next-btn:active{ transform:scale(0.96); }
+
+  .intro, .outro{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:18px;
+  }
+  .intro .big-title, .outro .big-title{
+    font-family:Georgia, serif;
+    font-size:28px;
+    line-height:1.3;
+    margin-top:6px;
+  }
+  .intro .sub, .outro .sub{
+    font-size:14.5px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    max-width:300px;
+  }
+  .heart-icon{
+    font-size:38px;
+    animation: heartbeat 1.8s ease-in-out infinite;
+  }
+  @keyframes heartbeat{
+    0%,100%{ transform:scale(1); }
+    15%{ transform:scale(1.18); }
+    30%{ transform:scale(1); }
+    45%{ transform:scale(1.12); }
+    60%{ transform:scale(1); }
+  }
+  .start-btn, .send-btn{
+    margin-top:8px;
+    background:var(--terracotta-deep);
+    color:#fff;
+    border:none;
+    border-radius:30px;
+    padding:15px 34px;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    transition: transform 0.15s, box-shadow 0.2s;
+    font-family:inherit;
+    box-shadow:0 8px 20px rgba(217,116,86,0.35);
+  }
+  .start-btn:active, .send-btn:active{ transform:scale(0.96); }
+  .send-btn.saved{ background:var(--sage); box-shadow:0 8px 20px rgba(168,184,154,0.35); }
+
+  .recap{
+    width:100%;
+    text-align:left;
+    margin-top:6px;
+    max-height:230px;
+    overflow-y:auto;
+    padding-right:4px;
+  }
+  .recap-item{
+    border-bottom:1px dashed var(--paper-edge);
+    padding:10px 0;
+  }
+  .recap-q{
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .recap-a{
+    font-size:14.5px;
+    color:var(--ink);
+    font-weight:600;
+  }
+
+  .footnote{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:14px;
+    line-height:1.5;
+  }
+
+  .personal-note{
+    width:100%;
+    background:var(--cream-deep);
+    border-radius:14px;
+    padding:18px 20px;
+    margin-top:8px;
+    font-family:Georgia, 'Times New Roman', serif;
+    font-style:italic;
+    font-size:14.5px;
+    line-height:1.65;
+    color:var(--ink);
+    text-align:left;
+    position:relative;
+    border-left:3px solid var(--terracotta);
+    animation: noteIn 0.6s ease-out 0.15s both;
+  }
+  .personal-note::before{
+    content:'💭';
+    position:absolute;
+    top:-10px;
+    left:-10px;
+    font-size:18px;
+    background:var(--cream);
+    border-radius:50%;
+    padding:4px;
+  }
+  @keyframes noteIn{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .petal, .heart-icon{ animation:none; }
+    .card{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="sound-toggle" id="soundToggle" title="Musique">🔇</div>
+  <div class="notebook" id="notebook"></div>
+</div>
+
+<script>
+/* ============ AMBIENT PETALS ============ */
+const stageBody = document.body;
+const petalChars = ['❀','✿','♡'];
+for(let i=0;i<10;i++){
+  const p = document.createElement('div');
+  p.className = 'petal';
+  p.textContent = petalChars[i % petalChars.length];
+  p.style.left = Math.random()*100 + 'vw';
+  p.style.fontSize = (12 + Math.random()*14) + 'px';
+  p.style.animationDuration = (12 + Math.random()*10) + 's';
+  p.style.animationDelay = (Math.random()*10) + 's';
+  stageBody.appendChild(p);
+}
+
+/* ============ MUSIC: custom mp3 with generated fallback ============ */
+let audioCtx = null;
+let musicOn = false;
+let musicTimer = null;
+let userInteracted = false;
+let usingCustomTrack = true;
+
+const customAudio = new Audio('musique.mp3');
+customAudio.loop = true;
+customAudio.volume = 0.5;
+customAudio.preload = 'auto';
+
+// If the custom file fails to load (missing, wrong name, etc), fall back to generated melody
+customAudio.addEventListener('error', () => {
+  usingCustomTrack = false;
+});
+
+function initAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function playNote(freq, time, dur, vol){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, time);
+  gain.gain.linearRampToValueAtTime(vol, time + 0.4);
+  gain.gain.linearRampToValueAtTime(0, time + dur);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(time);
+  osc.stop(time + dur + 0.1);
+}
+
+const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+function scheduleLoop(){
+  if(!musicOn) return;
+  const now = audioCtx.currentTime;
+  let t = now;
+  for(let i=0;i<4;i++){
+    const note = scale[Math.floor(Math.random()*scale.length)];
+    const dur = 2.2 + Math.random()*1.4;
+    playNote(note, t, dur, 0.045);
+    if(i % 3 === 0){
+      playNote(note/2, t, dur*1.3, 0.025);
+    }
+    t += dur * 0.7;
+  }
+  musicTimer = setTimeout(scheduleLoop, (t-now)*1000);
+}
+
+function startMusic(){
+  if(usingCustomTrack){
+    customAudio.play().catch(() => {
+      // playback blocked or file missing — fall back to generated melody
+      usingCustomTrack = false;
+      startGeneratedMusic();
+    });
+  } else {
+    startGeneratedMusic();
+  }
+  musicOn = true;
+  document.getElementById('soundToggle').classList.add('on');
+  document.getElementById('soundToggle').textContent = '🔊';
+}
+function startGeneratedMusic(){
+  initAudio();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  scheduleLoop();
+}
+function stopMusic(){
+  musicOn = false;
+  customAudio.pause();
+  clearTimeout(musicTimer);
+  document.getElementById('soundToggle').classList.remove('on');
+  document.getElementById('soundToggle').textContent = '🔇';
+}
+
+// Start music automatically on the very first tap anywhere on the page
+document.addEventListener('click', function firstTapHandler(){
+  if(!userInteracted){
+    userInteracted = true;
+    startMusic();
+  }
+}, { once:false });
+
+document.getElementById('soundToggle').addEventListener('click', function(e){
+  e.stopPropagation();
+  userInteracted = true;
+  if(musicOn) stopMusic(); else startMusic();
+});
+
+/* ============ QUIZ DATA ============ */
+const questions = [
+  {
+    type:"mcq",
+    eyebrow:"Pour commencer",
+    text:"Quand tu penses à \"nous\", tu ressens surtout…",
+    options:["De la curiosité, on découvre encore", "De la sécurité, comme une évidence", "Un mélange de papillons et de peur", "Je préfère ne pas trop y penser, ça me submerge"]
+  },
+  {
+    type:"mcq",
+    eyebrow:"Petite confidence",
+    text:"Ta plus grande peur dans une histoire comme la nôtre, c'est…",
+    options:["Que l'autre se lasse", "De trop donner et d'être déçue", "De ne pas être assez \"facile à aimer\"", "Honnêtement, j'ai peur de m'attacher trop vite"]
+  },
+  {
+    type:"open",
+    eyebrow:"Sois honnête",
+    text:"Une chose que tu n'as jamais osé me dire sur ce qu'on vit ?",
+    placeholder:"Écris ici, je serai doux promis..."
+  },
+  {
+    type:"mcq",
+    eyebrow:"Sa façon d'aimer",
+    text:"Tu montres que tu aimes quelqu'un surtout par…",
+    options:["Les petites attentions du quotidien", "Le temps que tu lui donnes", "Les mots, \"mon amour\" et compagnie", "Le fait que tu baisses ta garde avec lui"]
+  },
+  {
+    type:"open",
+    eyebrow:"Question piège",
+    text:"Sur une échelle de \"c'est juste un mot doux\" à \"je le pense vraiment\", où se situe ton \"mon amour\" pour moi ?",
+    placeholder:"Réponse honnête exigée 😏"
+  },
+  {
+    type:"mcq",
+    eyebrow:"Tes attentes",
+    text:"Ce que tu attends le plus de moi en ce moment, c'est…",
+    options:["De la clarté sur où on va", "De la patience avec ma carapace", "Plus de taquineries comme celle-ci d'ailleurs", "Juste que tu restes, simplement"]
+  },
+  {
+    type:"mcq",
+    eyebrow:"Petit jeu",
+    text:"Si je te dis \"officiellement\", tu réponds…",
+    options:["Quand tu veux, je suis prête depuis un moment", "On verra, j'ai pas envie de précipiter", "Pourquoi, t'as quelque chose à proposer ?", "On est déjà tout comme non ?"]
+  },
+  {
+    type:"open",
+    eyebrow:"Pour de vrai",
+    text:"Qu'est-ce qui te ferait dire \"ok là je sais que c'est lui/elle\" ?",
+    placeholder:"Prends ton temps..."
+  },
+  {
+    type:"mcq",
+    eyebrow:"Dernière, promis",
+    text:"Si tu devais résumer ce que je te fais ressentir en un mot...",
+    options:["Calme", "Vivante", "En sécurité", "Un peu trop de choses à la fois, dans le bon sens"]
+  }
+];
+
+const answers = new Array(questions.length).fill(null);
+let current = -1;
+let saved = false;
+
+const notebook = document.getElementById('notebook');
+
+function renderIntro(){
+  notebook.innerHTML = `
+    <div class="card">
+      <div class="intro">
+        <div class="heart-icon">🤍</div>
+        <div class="big-title">Un petit carnet,<br>juste pour nous deux</div>
+        <div class="sub">Quelques questions sur toi, sur nous, sur ce qu'on n'a peut-être jamais dit à voix haute. Réponds comme tu le sens, je lirai tout avec douceur (et un peu de malice).</div>
+        <button class="start-btn" id="startBtn">Je commence</button>
+        <div class="footnote">${questions.length} petites questions · 2 minutes</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('startBtn').onclick = ()=> goTo(0);
+}
+
+function renderQuestion(i){
+  const q = questions[i];
+  const dots = questions.map((_,idx)=>{
+    let cls = 'progress-dot';
+    if(idx < i) cls += ' done';
+    if(idx === i) cls += ' current';
+    return `<div class="${cls}"><div class="fill"></div></div>`;
+  }).join('');
+
+  let body = '';
+  if(q.type === 'mcq'){
+    body = `<div class="options">` + q.options.map((opt,idx)=>
+      `<button class="option" data-idx="${idx}">${opt}</button>`
+    ).join('') + `</div>`;
+  } else {
+    body = `<textarea class="open-answer" placeholder="${q.placeholder||''}"></textarea>`;
+  }
+
+  notebook.innerHTML = `
+    <div class="card">
+      <div class="stitches"></div>
+      <div class="progress-track">${dots}</div>
+      <div class="eyebrow">${q.eyebrow}</div>
+      <div class="question">${q.text}</div>
+      ${body}
+      <div class="nav-row">
+        <button class="next-btn" id="nextBtn">${i === questions.length-1 ? 'Voir le récap' : 'Suivant →'}</button>
+      </div>
+    </div>
+  `;
+
+  const nextBtn = document.getElementById('nextBtn');
+
+  if(q.type === 'mcq'){
+    const opts = notebook.querySelectorAll('.option');
+    opts.forEach(btn=>{
+      btn.onclick = ()=>{
+        opts.forEach(b=>b.classList.remove('selected'));
+        btn.classList.add('selected');
+        answers[i] = q.options[+btn.dataset.idx];
+        nextBtn.classList.add('active');
+      };
+    });
+    if(answers[i]){
+      opts.forEach(b=>{ if(b.textContent === answers[i]) b.classList.add('selected'); });
+      nextBtn.classList.add('active');
+    }
+  } else {
+    const ta = notebook.querySelector('.open-answer');
+    if(answers[i]) ta.value = answers[i];
+    ta.addEventListener('input', ()=>{
+      answers[i] = ta.value.trim();
+      nextBtn.classList.toggle('active', answers[i].length > 0);
+    });
+    if(answers[i] && answers[i].length>0) nextBtn.classList.add('active');
+  }
+
+  nextBtn.onclick = ()=>{
+    if(!nextBtn.classList.contains('active')) return;
+    if(i === questions.length-1){
+      goTo(questions.length);
+    } else {
+      goTo(i+1);
+    }
+  };
+}
+
+async function saveAnswers(){
+  try{
+    await fetch('/api/save', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        answers: questions.map((q,idx)=>({ question: q.text, eyebrow: q.eyebrow, answer: answers[idx] })),
+        submittedAt: new Date().toISOString()
+      })
+    });
+    saved = true;
+  }catch(e){
+    saved = false;
+  }
+}
+
+function renderOutro(){
+  const recapHTML = questions.map((q,idx)=>`
+    <div class="recap-item">
+      <div class="recap-q">${q.eyebrow}</div>
+      <div class="recap-a">${answers[idx] || '—'}</div>
+    </div>
+  `).join('');
+
+  const personalNote = "Ehhh oui Kadmiel mon amour, moi aussi j'ai envie d'apprendre à t'aimer comme tu veux être aimé. Pas comme je pense que tu le mérites, pas comme j'ai aimé avant, mais exactement comme tu en as besoin. Fais-moi confiance, montre-moi tes blessures, tes silences, je veux apprendre ton langage de l'amour. Je veux t'aimer de la meilleure façon possible.";
+
+  notebook.innerHTML = `
+    <div class="card">
+      <div class="outro">
+        <div class="heart-icon">💌</div>
+        <div class="big-title">Voilà, c'est tout toi</div>
+        <div class="sub">Tes réponses sont enregistrées. Tu peux aussi les lui envoyer directement si tu veux.</div>
+        <div class="recap">${recapHTML}</div>
+        <div class="personal-note">${personalNote}</div>
+        <button class="send-btn" id="sendBtn">Lui envoyer par message 💌</button>
+        <div class="footnote" id="saveStatus">Enregistrement en cours...</div>
+      </div>
+    </div>
+  `;
+
+  saveAnswers().then(()=>{
+    const status = document.getElementById('saveStatus');
+    if(status) status.textContent = saved ? "Tes réponses ont bien été enregistrées." : "Réponses prêtes (l'envoi direct fonctionne même sans connexion).";
+  });
+
+  document.getElementById('sendBtn').onclick = sendViaSMS;
+}
+
+function sendViaSMS(){
+  let msg = "Voici mes réponses à ton petit carnet 💌\n\n";
+  questions.forEach((q,idx)=>{
+    msg += `${q.eyebrow} : ${answers[idx] || '—'}\n\n`;
+  });
+  const url = 'sms:&body=' + encodeURIComponent(msg);
+  window.location.href = url;
+}
+
+function goTo(i){
+  const oldCard = notebook.querySelector('.card');
+  if(oldCard){
+    oldCard.classList.add('leaving');
+    setTimeout(()=>{
+      current = i;
+      renderCurrent();
+    }, 220);
+  } else {
+    current = i;
+    renderCurrent();
+  }
+}
+
+function renderCurrent(){
+  if(current === -1) renderIntro();
+  else if(current === questions.length) renderOutro();
+  else renderQuestion(current);
+}
+
+renderCurrent();
+</script>
+
+</body>
+</html>

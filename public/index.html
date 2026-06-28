@@ -582,9 +582,21 @@ const questions = [
   },
   {
     type:"mcq",
-    eyebrow:"Dernière, promis",
+    eyebrow:"En un mot",
     text:"Si tu devais résumer ce que je te fais ressentir en un mot...",
     options:["Calme", "Vivante", "En sécurité", "Un peu trop de choses à la fois, dans le bon sens"]
+  },
+  {
+    type:"mcq",
+    eyebrow:"Projection",
+    text:"Dans un futur idéal, notre dimanche parfait ressemble à quoi ?",
+    options:["Sous la couette avec des séries et des snacks", "Une balade imprévue et un bon resto", "Tant qu'on est collés l'un à l'autre, le reste importe peu"]
+  },
+  {
+    type:"open",
+    eyebrow:"Dernière, promis",
+    text:"S'il y a bien un truc que tu aimerais qu'on fasse très bientôt tous les deux, c'est...",
+    placeholder:"Ne sois pas timide..."
   }
 ];
 
@@ -693,13 +705,6 @@ async function saveAnswers(){
 }
 
 function renderOutro(){
-  const recapHTML = questions.map((q,idx)=>`
-    <div class="recap-item">
-      <div class="recap-q">${q.eyebrow}</div>
-      <div class="recap-a">${answers[idx] || '—'}</div>
-    </div>
-  `).join('');
-
   const personalNote = "Ehhh oui Kadmiel mon amour, moi aussi j'ai envie d'apprendre à t'aimer comme tu veux être aimé. Pas comme je pense que tu le mérites, pas comme j'ai aimé avant, mais exactement comme tu en as besoin. Fais-moi confiance, montre-moi tes blessures, tes silences, je veux apprendre ton langage de l'amour. Je veux t'aimer de la meilleure façon possible.";
 
   notebook.innerHTML = `
@@ -708,8 +713,7 @@ function renderOutro(){
         <div class="heart-icon">💌</div>
         <div class="big-title">Voilà, c'est tout toi</div>
         <div class="sub">Tes réponses sont enregistrées précieusement. 🤍</div>
-        <div class="recap">${recapHTML}</div>
-        <div class="personal-note">${personalNote}</div>
+        <div class="personal-note" style="margin-top: 20px;">${personalNote}</div>
       </div>
     </div>
   `;

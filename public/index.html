@@ -427,7 +427,7 @@ let musicTimer = null;
 let userInteracted = false;
 let usingCustomTrack = true;
 
-const customAudio = new Audio('musique.mp3');
+const customAudio = new Audio('musique2.mp3');
 customAudio.loop = true;
 customAudio.volume = 0.5;
 customAudio.preload = 'auto';
@@ -707,30 +707,14 @@ function renderOutro(){
       <div class="outro">
         <div class="heart-icon">💌</div>
         <div class="big-title">Voilà, c'est tout toi</div>
-        <div class="sub">Tes réponses sont enregistrées. Tu peux aussi les lui envoyer directement si tu veux.</div>
+        <div class="sub">Tes réponses sont enregistrées précieusement. 🤍</div>
         <div class="recap">${recapHTML}</div>
         <div class="personal-note">${personalNote}</div>
-        <button class="send-btn" id="sendBtn">Lui envoyer par message 💌</button>
-        <div class="footnote" id="saveStatus">Enregistrement en cours...</div>
       </div>
     </div>
   `;
 
-  saveAnswers().then(()=>{
-    const status = document.getElementById('saveStatus');
-    if(status) status.textContent = saved ? "Tes réponses ont bien été enregistrées." : "Réponses prêtes (l'envoi direct fonctionne même sans connexion).";
-  });
-
-  document.getElementById('sendBtn').onclick = sendViaSMS;
-}
-
-function sendViaSMS(){
-  let msg = "Voici mes réponses à ton petit carnet 💌\n\n";
-  questions.forEach((q,idx)=>{
-    msg += `${q.eyebrow} : ${answers[idx] || '—'}\n\n`;
-  });
-  const url = 'sms:&body=' + encodeURIComponent(msg);
-  window.location.href = url;
+  saveAnswers();
 }
 
 function goTo(i){

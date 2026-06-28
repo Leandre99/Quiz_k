@@ -352,13 +352,53 @@
     to{ opacity:1; transform:translateY(0); }
   }
 
+  #envelopeOverlay {
+    position: fixed;
+    inset: 0;
+    background: var(--cream);
+    background-image: radial-gradient(circle at 50% 50%, rgba(232,146,124,0.15) 0%, transparent 70%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 1.2s ease, transform 1.2s ease;
+    cursor: pointer;
+  }
+  #envelopeOverlay.hidden {
+    opacity: 0;
+    transform: scale(1.05);
+    pointer-events: none;
+  }
+  .envelope-icon {
+    font-size: 70px;
+    margin-bottom: 20px;
+    animation: gentle-bounce 2.5s infinite ease-in-out;
+  }
+  @keyframes gentle-bounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.02); }
+  }
+  .envelope-text {
+    font-family: Georgia, serif;
+    font-size: 24px;
+    color: var(--ink);
+    text-align: center;
+    max-width: 300px;
+    line-height: 1.4;
+  }
   @media (prefers-reduced-motion: reduce){
-    .petal, .heart-icon{ animation:none; }
+    .petal, .heart-icon, .envelope-icon { animation:none; }
     .card{ animation:none; }
   }
 </style>
 </head>
 <body>
+
+<div id="envelopeOverlay">
+  <div class="envelope-icon">💌</div>
+  <div class="envelope-text">J'ai quelque chose pour toi mon amour. Touche l'écran pour l'ouvrir.</div>
+</div>
 
 <div class="stage">
   <div class="sound-toggle" id="soundToggle" title="Musique">🔇</div>
@@ -459,9 +499,20 @@ function stopMusic(){
   document.getElementById('soundToggle').textContent = '🔇';
 }
 
-// Start music automatically on the very first tap anywhere on the page
-document.addEventListener('click', function firstTapHandler(){
+// Envelope logic & Music trigger
+const envelopeOverlay = document.getElementById('envelopeOverlay');
+envelopeOverlay.addEventListener('click', function() {
   if(!userInteracted){
+    userInteracted = true;
+    startMusic();
+  }
+  envelopeOverlay.classList.add('hidden');
+  setTimeout(() => envelopeOverlay.style.display = 'none', 1500);
+});
+
+// Fallback in case they click elsewhere later
+document.addEventListener('click', function firstTapHandler(){
+  if(!userInteracted && envelopeOverlay.classList.contains('hidden')){
     userInteracted = true;
     startMusic();
   }

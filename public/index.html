@@ -473,18 +473,20 @@ function scheduleLoop(){
 }
 
 function startMusic(){
+  musicOn = true;
+  document.getElementById('soundToggle').classList.add('on');
+  document.getElementById('soundToggle').textContent = '🔊';
+
   if(usingCustomTrack){
-    customAudio.play().catch(() => {
+    return customAudio.play().catch(() => {
       // playback blocked or file missing — fall back to generated melody
       usingCustomTrack = false;
       startGeneratedMusic();
     });
   } else {
     startGeneratedMusic();
+    return Promise.resolve();
   }
-  musicOn = true;
-  document.getElementById('soundToggle').classList.add('on');
-  document.getElementById('soundToggle').textContent = '🔊';
 }
 function startGeneratedMusic(){
   initAudio();
@@ -504,10 +506,14 @@ const envelopeOverlay = document.getElementById('envelopeOverlay');
 envelopeOverlay.addEventListener('click', function() {
   if(!userInteracted){
     userInteracted = true;
-    startMusic();
+    const envText = document.querySelector('.envelope-text');
+    envText.innerHTML = 'Chargement de la magie... ⏳<br><span style="font-size:15px;opacity:0.7">(le temps que la musique arrive)</span>';
+    
+    startMusic().then(() => {
+      envelopeOverlay.classList.add('hidden');
+      setTimeout(() => envelopeOverlay.style.display = 'none', 1500);
+    });
   }
-  envelopeOverlay.classList.add('hidden');
-  setTimeout(() => envelopeOverlay.style.display = 'none', 1500);
 });
 
 // Fallback in case they click elsewhere later

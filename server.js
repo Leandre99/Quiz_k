@@ -37,13 +37,6 @@ async function initDb() {
   }
 }
 
-// Only initialize DB if DATABASE_URL is provided (avoids crash locally if not set yet)
-if (process.env.DATABASE_URL) {
-  initDb();
-} else {
-  console.warn('WARNING: DATABASE_URL is not set. Database will not be initialized.');
-}
-
 app.post('/api/save', async (req, res) => {
   try {
     const data = req.body;
@@ -82,7 +75,15 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+(async () => {
+  if (process.env.DATABASE_URL) {
+    await initDb();
+  } else {
+    console.warn('WARNING: DATABASE_URL is not set. Database will not be initialized.');
+  }
+
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+})();

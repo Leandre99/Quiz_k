@@ -634,7 +634,8 @@ function renderQuestion(i){
   if(q.type === 'mcq'){
     body = `<div class="options">` + q.options.map((opt,idx)=>
       `<button class="option" data-idx="${idx}">${opt}</button>`
-    ).join('') + `</div>`;
+    ).join('') + `</div>
+    <textarea class="open-answer custom-mcq" placeholder="Autre chose ? Écris ce que tu ressens..." style="margin-top:12px;"></textarea>`;
   } else {
     body = `<textarea class="open-answer" placeholder="${q.placeholder||''}"></textarea>`;
   }
@@ -656,16 +657,40 @@ function renderQuestion(i){
 
   if(q.type === 'mcq'){
     const opts = notebook.querySelectorAll('.option');
+    const ta = notebook.querySelector('.custom-mcq');
+    
     opts.forEach(btn=>{
       btn.onclick = ()=>{
         opts.forEach(b=>b.classList.remove('selected'));
         btn.classList.add('selected');
+        ta.value = '';
         answers[i] = q.options[+btn.dataset.idx];
         nextBtn.classList.add('active');
       };
     });
+
+    ta.addEventListener('input', ()=>{
+      if(ta.value.trim().length > 0){
+        opts.forEach(b=>b.classList.remove('selected'));
+        answers[i] = ta.value.trim();
+        nextBtn.classList.add('active');
+      } else {
+        answers[i] = null;
+        nextBtn.classList.remove('active');
+      }
+    });
+
     if(answers[i]){
-      opts.forEach(b=>{ if(b.textContent === answers[i]) b.classList.add('selected'); });
+      let found = false;
+      opts.forEach(b=>{ 
+        if(b.textContent === answers[i]){
+          b.classList.add('selected');
+          found = true;
+        }
+      });
+      if(!found){
+        ta.value = answers[i];
+      }
       nextBtn.classList.add('active');
     }
   } else {
